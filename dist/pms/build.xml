@@ -1,0 +1,82 @@
+<project name="pms" default="main">
+
+    <property name="pms.dir"           value="..\pms"/>
+    <property name="bin.dir"          value="${pms.dir}/bin"/>
+    <property name="build.dir"        value="${pms.dir}/build"/>
+    <property name="conf.dir"         value="${pms.dir}/conf"/>
+    <property name="resource.dir"     value="${conf.dir}/resource"/>
+    <property name="dist.dir"         value="${pms.dir}/dist"/>
+    <property name="doc.dir"          value="${pms.dir}/doc"/>
+    <property name="lib.dir"          value="${pms.dir}/lib"/>  
+    <property name="src.dir"          value="${pms.dir}/src"/>
+    <property name="test.dir"         value="${pms.dir}/test"/>    
+    <property name="libr.dir"         value="${build.dir}/lib"/>
+    <property name="classes.dir"      value="${build.dir}/classes"/>
+    <property name="test-classes.dir" value="${build.dir}/test-classes"/>
+    <property name="pmsdevlopment.dir"        value="${pms.dir}/.."/>
+  
+    
+    <property name="main-class"       value="com.infinira.pms.test.PMSTest" />
+    
+    <path id="application" location="${libr.dir}/${ant.project.name}.jar"/>
+    
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/> 
+    </path> 
+    
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>  
+   
+    <target name="compile">
+      
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="build/test-classes/com/infinira/pms/test"/>
+        <mkdir dir="${libr.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false" classpathref="classpath"/>
+        <javac srcdir="${test.dir}" destdir="build/test-classes/com/infinira/pms/test" includeantruntime="false" classpathref="classpath" >
+            <classpath>
+                <pathelement location="${classes.dir}/"/>  
+            </classpath>
+        </javac>
+        <copy todir="${libr.dir}">
+           <fileset dir="lib" includes="**/*.jar"/>
+        </copy>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${libr.dir}/${ant.project.name}.jar" >
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+            </manifest>
+            <fileset dir="${classes.dir}"/>
+            <fileset dir="build/test-classes/com/infinira/pms/test"/>
+			<fileset dir="conf"/>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java fork="true" classname="${main-class}" >
+        <classpath>
+            <path refid="classpath"/>
+            <path location="${libr.dir}/${ant.project.name}.jar"/>
+            <pathelement location="${conf.dir}"/> 
+            <pathelement location="${resource.dir}"/>
+        </classpath>
+        </java>
+    </target> 
+        <target name="zip">
+        <mkdir dir="${dist.dir}"/>
+        <zip destfile="${dist.dir}/${ant.project.name}.zip">
+            <zipfileset dir="${build.dir}" includes="lib/*" />
+            <zipfileset dir="${pms.dir}" includes=" conf/**, bin/*,PMSlogs/*,build.xml, readme.txt"/>   
+        </zip>
+            <zip destfile="${dist.dir}/${ant.project.name}dev.zip">
+            <zipfileset dir="${pms.dir}" excludes="dist/**, build/**" />  
+        </zip>
+    </target>
+
+    <target name="main" depends="clean, run,zip"/>
+
+</project>
